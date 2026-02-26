@@ -1,5 +1,5 @@
 body {
- overflow: hidden;
+  overflow: hidden;
 }
 
 .container {
@@ -13,10 +13,11 @@ body {
 
 .header {
   background: #1976d2;
+  color: white;
   flex-basis: content;
   flex-grow: 0;
-  padding-top: 5px;
-  padding-bottom: 5px;
+  padding-top: 3px;
+  padding-bottom: 3px;
 }
 
 .content {

@@ -1,47 +1,48 @@
-import { useState, useEffect } from 'react'
-import AppBar from './AppBar'
+import { useState } from 'react'
+import { useDisclosure } from '@mantine/hooks'
+import Header from './Components/Header'
+import HintsModal from "./Components/HintsModal"
+import AboutModal from "./Components/AboutModal"
+import RestartModal from "./Components/RestartModal"
 
 export default function App() {
 
-  interface State {
-    isSoundOn: boolean,
-  }
+  const [isSoundOn, setIsSoundOn] = useState<boolean>(() => {
+    try {
+      const stored = localStorage.getItem('state')
+      if (!stored) return true
 
-  let state: State = localStorage.hasOwnProperty('state') 
-    ? JSON.parse(localStorage.getItem('state') || '{}')
-    : {
-        isSoundOn: true
-      }
- 
-  const [isSoundOn, setIsSoundOn] = useState<boolean>(state.isSoundOn)
- 
-  useEffect(function storeStateInLocalStorage(): void {
-    // For testing purposes, never save.
-    if(false) {  
-      localStorage.setItem(
-        'state', 
-        JSON.stringify({
-          isSoundOn: isSoundOn,
-          // There is room for more items in the state
-        })
-      )
+      const parsed = JSON.parse(stored)
+      return parsed.isSoundOn ?? true
+    } catch {
+      return true
     }
-  }, [isSoundOn])
+  })
 
   function restart() {
     localStorage.removeItem('state')
     window.location.reload()
   }
 
+  const [openedAbout, aboutsHandlers] = useDisclosure(false)
+  const [openedRestart, restartHandlers] = useDisclosure(false)
+  const [openedHints, hintsHandlers] = useDisclosure(false)
+  
   return (
     <>
+      <HintsModal opened={openedHints} onClose={hintsHandlers.close}/>             
+      <RestartModal opened={openedRestart} onClose={restartHandlers.close} restart={restart}/>
+      <AboutModal opened={openedAbout} onClose={aboutsHandlers.close}/>
+
       <div className="container">
         <div className="header">
           <div className='center'>
-            <AppBar
+            <Header
               isSoundOn={isSoundOn}
               setIsSoundOn={setIsSoundOn}
-              restart={restart}
+              openHints={hintsHandlers.open}
+              openRestart={restartHandlers.open}
+              openAbout={aboutsHandlers.open}
             />
           </div>
         </div>
@@ -53,7 +54,7 @@ export default function App() {
         <div className="footer">
           <div className='center'>
             {/* 
-              TO DO: Place footer.
+              TO DO: Maybe place footer.
             */}
           </div>
         </div>
