@@ -8,6 +8,7 @@ import { Text, ActionIcon, Group, Transition, Stack, Box, Tooltip } from '@manti
 import { useDisclosure } from '@mantine/hooks'
 
 interface props {
+  chapterName: string,
   isSoundOn: boolean,
   setIsSoundOn: (value: boolean) => void
   openHints: () => void,
@@ -15,7 +16,7 @@ interface props {
   openAbout: () => void
 }
 
-export default function Header({isSoundOn, setIsSoundOn, openHints, openRestart, openAbout} : props) {
+export default function Header({chapterName, isSoundOn, setIsSoundOn, openHints, openRestart, openAbout} : props) {
 
   const [openedMenu, { toggle: toggleMenu }] = useDisclosure();
 
@@ -29,9 +30,12 @@ export default function Header({isSoundOn, setIsSoundOn, openHints, openRestart,
           gap="md"
         >
           <Group justify="space-between" >
-            <Group>
+            <Group gap={8}>
               <Text size="xl" fw={400}>
                 GREY4
+              </Text>
+              <Text size="xl" fw={300}>
+                {chapterName}
               </Text>
             </Group>
             <Group justify="space-between" gap={0}>
