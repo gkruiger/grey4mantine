@@ -5,6 +5,7 @@ export default class GameEngine {
   private log: string[]
   private view: ChapterView[]
   private currentChapterId: string = ''
+  private currentChapterPartId: string = ''
 
   constructor() {
     this.log = []
@@ -106,10 +107,10 @@ export default class GameEngine {
       for(let chapterPart of chapter.parts) {
         if(this.meetsRequirements(chapterPart.requires) && chapterPart.revealedAt === undefined) {
           chapterPart.revealedAt = this.getMaxOrderNumber() + 1
+          this.currentChapterPartId = chapterPart.id
         }
         
         for(let content of chapterPart.content) {
-          
           switch(content.type) {
             case 'action':
               if(this.meetsRequirements(content.requires) && content.revealedAt === undefined) content.revealedAt = this.getMaxOrderNumber() + 1
@@ -146,6 +147,10 @@ export default class GameEngine {
 
   private puzzleIsSolved(puzzleId: string): boolean {
     return this.actionIsTaken(puzzleId)
+  }
+
+  getCurrentChapterPartId(): string {
+    return this.currentChapterPartId
   }
 
   getCurrentChapterName(): string {

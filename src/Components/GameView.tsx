@@ -1,15 +1,18 @@
-import { ReactNode } from "react"
-import { Text, Box, Button, Overlay } from "@mantine/core"
+import { ReactNode, useRef, useEffect } from "react"
+import { Text, Box, Button } from "@mantine/core"
 import { ChapterPartView } from "../Types/types"
 import PortalActivator from "../Puzzles/PortalActivator"
 
 interface props {
   visibleContent: ChapterPartView[],
+  currentChapterPartId: string,
   handleAction: (id: string) => void
 }
 
-function GameView({visibleContent, handleAction}: props) {
+function GameView({visibleContent, currentChapterPartId, handleAction}: props) {
  
+  const refs = useRef(new Map())
+  
   const puzzle = (id: string, isSolved: boolean): ReactNode => {
     switch(id) {
       case 'fill_the_three_bars': return <PortalActivator isSolved={isSolved} executeWhenSolved={() => handleAction('fill_the_three_bars')}/>
@@ -17,10 +20,23 @@ function GameView({visibleContent, handleAction}: props) {
     }
   }
 
+  useEffect(() => {
+    if(refs.current) {        
+      const currentChapterPartRef = refs.current.get(currentChapterPartId)
+      if(currentChapterPartRef !== undefined) {  
+        currentChapterPartRef.scrollIntoView({
+          behavior: 'smooth',
+          block: 'end',
+          inline: 'nearest'
+        })
+      }
+    }
+  })
+
   return (
     <>
       {visibleContent.map((chapterPart, index) => 
-        <div key={chapterPart.id} className='fadeIn' style={{backgroundColor: index % 2 == 1 ? '#eeeeee' : '#dddddd', paddingTop: 10, paddingBottom: 5}}>
+        <div ref={el => el ? refs.current.set(chapterPart.id, el) : refs.current.delete(chapterPart.id)} key={chapterPart.id} className='fadeIn' style={{backgroundColor: index % 2 == 1 ? '#eeeeee' : '#dddddd', paddingTop: 10, paddingBottom: 5}}>
           <div className='center'>
             <Text 
               size="xxl"

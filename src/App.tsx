@@ -60,6 +60,7 @@ export default function App() {
         <div className="content">
           <GameView
             visibleContent={gameEngine.getVisibleContent()}
+            currentChapterPartId={gameEngine.getCurrentChapterPartId()}
             handleAction={handleAction}
           />
         </div>
