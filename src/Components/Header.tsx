@@ -34,7 +34,7 @@ export default function Header({chapterName, isSoundOn, setIsSoundOn, openHints,
               <Text size="xl" fw={400}>
                 GREY4
               </Text>
-              <Text size="xl" fw={300} className='fadeIn'>
+              <Text key={chapterName} size="xl" fw={300} className='fadeIn'>
                 {chapterName}
               </Text>
             </Group>
