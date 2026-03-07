@@ -30,8 +30,8 @@ export default function App() {
   const [openedRestart, restartHandlers] = useDisclosure(false)
   const [openedHints, hintsHandlers] = useDisclosure(false)
   
-  const [gameEngine, setGameEngine] = useState(() => new GameEngine())
-  const [tick, setTick] = useState<number>(0)
+  const [gameEngine, ] = useState(() => new GameEngine())
+  const [, setTick] = useState<number>(0)
 
   const handleAction = (id: string) => {
     gameEngine.performAction(id)    
