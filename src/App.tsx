@@ -5,7 +5,6 @@ import HintsModal from "./Components/HintsModal"
 import AboutModal from "./Components/AboutModal"
 import RestartModal from "./Components/RestartModal"
 import GameEngine from './Game/GameEngine'
-import Chapter from './Components/GameView'
 import GameView from './Components/GameView'
 
 export default function App() {
@@ -31,17 +30,12 @@ export default function App() {
   const [openedRestart, restartHandlers] = useDisclosure(false)
   const [openedHints, hintsHandlers] = useDisclosure(false)
   
-  const [engine] = useState(() => new GameEngine())
-  const [gameState, setGameState] = useState(engine.getState())
+  const [gameEngine, setGameEngine] = useState(() => new GameEngine())
+  const [tick, setTick] = useState<number>(0)
 
   const handleAction = (id: string) => {
-    engine.performAction(id)
-    setGameState(engine.getState())
-  }
-
-  const handlePuzzleSolved = (id: string) => {
-    engine.solvePuzzle(id)
-    setGameState(engine.getState())
+    gameEngine.performAction(id)    
+    setTick(prevTick => prevTick +1)
   }
 
   return (
@@ -54,7 +48,7 @@ export default function App() {
         <div className="header">
           <div className='center'>
             <Header
-              chapterName={engine.getCurrentChapterName()}
+              chapterName={gameEngine.getCurrentChapterName()}
               isSoundOn={isSoundOn}
               setIsSoundOn={setIsSoundOn}
               openHints={hintsHandlers.open}
@@ -65,9 +59,8 @@ export default function App() {
         </div>
         <div className="content">
           <GameView
-            chapterParts={engine.getVisibleContent()}
+            visibleContent={gameEngine.getVisibleContent()}
             handleAction={handleAction}
-            solvePuzzle={handleAction}
           />
         </div>
         <div className="footer">

@@ -1,123 +1,172 @@
-import { ChapterPart, Action, Chapter, VisibleChapterPart } from "../Types/types"
+import { ChapterView, ChapterPartView, ContentBlockView } from "../Types/types"
 import Data from "./GameData"
 
-interface GameState {
-  currentChapterId: string
-  log: string[]
-}
-
 export default class GameEngine {
-  private chapters: Chapter[]
-  private state: GameState
+  private log: string[]
+  private view: ChapterView[]
+  private currentChapterId: string = ''
 
   constructor() {
-    this.chapters = Data
-    this.state = {
-      currentChapterId: this.chapters[0].id,
-      log: ['start']
-    }
-  }
+    this.log = []
 
-  getState(): GameState {
-    return {
-      currentChapterId: this.state.currentChapterId,
-      log: Array.from(this.state.log),
-    }
-  }
-
-  setCurrentChapter(id: string): void {
-    this.state.currentChapterId = id
-  }
-
-  getCurrentChapterName(): string {
-    return this.getCurrentChapter.name
-  }
-
-  getCurrentChapter(): Chapter {
-    let currentChapter = this.chapters.find(chapter => chapter.id == this.state.currentChapterId)
-    if(currentChapter === undefined) throw Error(`Can't find chapter by id ${this.state.currentChapterId}`)
-    return currentChapter
-  }
-
-  getChapterPart(id: string): ChapterPart {
-    let chapterPart = this.getCurrentChapter().parts.find(chapterPart => chapterPart.id === id)
-    if(chapterPart === undefined) throw Error(`Can't find chapter part by id ${id}`)
-    return chapterPart
-  }
-
-  getVisibleContent(): VisibleChapterPart[] {
-    let visibleContent: VisibleChapterPart[] = []
-
-    let currentChapter: Chapter = this.getCurrentChapter()
-
-    // Adding chapterparts
-    for(let i=1; i<=this.state.log.length; i++) {
-      let logSlice = this.state.log.slice(0, i)
-
-      for(let chapterPart of currentChapter.parts) {
-        if(
-          (chapterPart.requires && chapterPart.requires.every(requirement => logSlice.includes(requirement))) &&
-          !visibleContent.some(part => part.id == chapterPart.id)
-        ) {
-          visibleContent.push({
-            id: chapterPart.id,
-            title: chapterPart.title,
-            content: [...chapterPart.content.filter(content => content.type == 'text')]
+    this.view = Data
+      .map(chapter=> ({ 
+        id: chapter.id,
+        title: chapter.title,
+        requires: chapter.requires,
+        revealedAt: undefined,
+        parts: chapter.parts.map(part => ({
+          id: part.id,
+          title: part.title,
+          requires: part.requires,
+          revealedAt: undefined,
+          content: part.content.flatMap((content): ContentBlockView[] => {
+            let returnValue: ContentBlockView[] = []
+            switch (content.type) {
+              case 'text': 
+                returnValue.push({
+                  type: content.type,
+                  requires: content.requires,
+                  text: content.text,
+                  revealedAt: undefined,
+                })
+                break
+              case 'action': 
+                returnValue.push({
+                  id: content.id,
+                  type: content.type,
+                  label: content.label,
+                  requires: content.requires,
+                  dont: content.dont,
+                  changeChapter: content.changeChapter,
+                  revealedAt: undefined,
+                  isExecuted: false
+                })
+                if(content.resultText !== undefined) {
+                  returnValue.push({
+                    type:'text',
+                    requires: [content.id],
+                    text: content.resultText,
+                    revealedAt: undefined,
+                  })
+                }
+                break
+              case 'puzzle': 
+                returnValue.push({
+                  id: content.id,
+                  type: content.type,
+                  requires: content.requires,         
+                  revealedAt: undefined,
+                  isSolved: false
+                })
+                if(content.resultText !== undefined) {
+                  returnValue.push({
+                    type:'text',
+                    requires: [content.id],
+                    text: content.resultText,
+                    revealedAt: undefined,
+                  })
+                }
+                break
+            }
+            return returnValue
           })
-        }        
-      }
-    }
+        }))
+      }))
 
-    // Add actions to the chapterparts
-    for(let i=1; i<=this.state.log.length; i++) {
-      let logSlice = this.state.log.slice(0, i)
+    // Execute fake first action
+    this.performAction('start')
+  }
 
-      for(let chapterPart of visibleContent) {
-        let possibleActions = this.getChapterPart(chapterPart.id).content.filter(content => content.type === 'action').map(content => content.action)
-
-        for(let possibleAction of possibleActions) {
-          if(
-            (possibleAction.requires && possibleAction.requires.every(requirement => logSlice.includes(requirement))) &&
-            !this.state.log.includes(possibleAction.id) &&
-            !chapterPart.content.some(content => content.type === 'action' && content.action.id === possibleAction.id)
-          ) {
-            chapterPart.content.push({
-              type: 'action',
-              action: {
-                id: possibleAction.id,
-                label: possibleAction.label
-              }
-            })
-          }
+  private getMaxOrderNumber(): number {
+    let maxOrderNumber = 0
+    
+    for(let chapter of this.view) {
+      if(chapter.revealedAt != undefined && chapter.revealedAt > maxOrderNumber) maxOrderNumber = chapter.revealedAt
+      for(let chapterPart of chapter.parts) {
+        if(chapterPart.revealedAt != undefined && chapterPart.revealedAt > maxOrderNumber) maxOrderNumber = chapterPart.revealedAt
+        for(let content of chapterPart.content) {
+          if(content.revealedAt != undefined && content.revealedAt > maxOrderNumber) maxOrderNumber = content.revealedAt
         }
       }
     }
-
-    // Add actions to the chapterparts
-    for(let logItem of this.state.log) {
-      for(let chapterPart of visibleContent) {
-        let possibleActions = this.getChapterPart(chapterPart.id).content.filter(content => content.type === 'action').map(content => content.action)
-
-        for(let possibleAction of possibleActions) {
-          if(possibleAction.id === logItem && possibleAction.resultText) {
-            chapterPart.content.push({
-              type: 'text',
-              text: possibleAction.resultText
-            })
-          }
-        }
-      }
-    }
-
-    return visibleContent
+    
+    return maxOrderNumber
   }
 
   performAction(actionId: string): void {
-    this.state.log.push(actionId)
+    this.log.push(actionId)
+
+    for(let chapter of this.view) { 
+  
+      if(chapter.id == actionId) {
+        this.currentChapterId = actionId 
+      }
+  
+      for(let chapterPart of chapter.parts) {
+        if(this.meetsRequirements(chapterPart.requires) && chapterPart.revealedAt === undefined) {
+          chapterPart.revealedAt = this.getMaxOrderNumber() + 1
+        }
+        
+        for(let content of chapterPart.content) {
+          
+          switch(content.type) {
+            case 'action':
+              if(this.meetsRequirements(content.requires) && content.revealedAt === undefined) content.revealedAt = this.getMaxOrderNumber() + 1
+              if(this.actionIsTaken(content.id)) content.isExecuted = true
+              if(content.dont !== undefined && this.actionsAreTaken(content.dont)) content.isExecuted = true
+              if(content.id == actionId && content.changeChapter) this.currentChapterId = content.changeChapter
+              break   
+            case 'puzzle':
+              if(this.meetsRequirements(content.requires) && content.revealedAt === undefined) content.revealedAt = this.getMaxOrderNumber() + 1
+              if(this.puzzleIsSolved(content.id)) content.isSolved = true
+              break
+            case 'text':
+              if(this.meetsRequirements(content.requires) && content.revealedAt === undefined) content.revealedAt = this.getMaxOrderNumber() + 1
+              break
+          }
+        }    
+      }  
+    }
+
+    // Scroll to? Waarnaar? Welke situaties? 
   }
 
-  solvePuzzle(puzzleIs: string): void {
-    this.state.log.push(puzzleIs)
+  private meetsRequirements(requirements: string[]): boolean {
+    return requirements.every(requirement => this.log.includes(requirement))
   }
-  
+
+  private actionIsTaken(actionId: string): boolean {
+    return this.log.includes(actionId)
+  }
+
+  private actionsAreTaken(actionIds: string[]): boolean {
+    return actionIds.every(actionId => this.actionIsTaken(actionId))    
+  }
+
+  private puzzleIsSolved(puzzleId: string): boolean {
+    return this.actionIsTaken(puzzleId)
+  }
+
+  getCurrentChapterName(): string {
+    const chapterName = this.view.find(chapter => chapter.id === this.currentChapterId)?.title
+    if(chapterName === undefined) throw Error(`Can't find chapter name based on id ${this.currentChapterId}.`)
+    return chapterName
+  }
+
+  getVisibleContent(): ChapterPartView[] {
+    const relevantChapterParts = this.view.find(chapter => chapter.id == this.currentChapterId)?.parts
+    if(relevantChapterParts === undefined) throw Error(`Can't find chapter name based on id ${this.currentChapterId}.`)
+    
+    const visibleContent = relevantChapterParts
+      .filter(chapterPart => chapterPart.revealedAt !== undefined)
+      .map(chapterPart => ({
+        ...chapterPart,
+        content: chapterPart.content
+          .filter(content => content.revealedAt !== undefined)
+          .sort((a, b) => (a.revealedAt ?? 0) - (b.revealedAt ?? 0))
+      }))
+    
+    return visibleContent
+  }
 }

@@ -1,6 +1,9 @@
+// Data
+
 export type Chapter = {
   id: string,
   title: string,
+  requires: string[],
   parts: ChapterPart[]
 }
 
@@ -11,26 +14,74 @@ export type ChapterPart = {
   content: ContentBlock[]
 }
 
-export type VisibleChapterPart = {
-  id: string,
-  title: string,
-  content: ContentBlock[]
+export type ContentBlock = Text | Action | Puzzle
+
+export type Text = { 
+  type: "text", 
+  requires: string[],
+  text: string 
 }
 
-export type ContentBlock =
-  | { type: "text", text: string }
-  | { type: 'action', action: Action }
-  | { type: 'puzzle', puzzle: Puzzle }
-
-export type Action = {
+export type Action = { 
+  type: 'action', 
   id: string,
   label: string,
-  requires?: string[],
-  resultText?: string
+  requires: string[],
+  dont?: string[],
+  resultText?: string,
+  changeChapter?: string,
+  chapter?: string
 }
 
 export type Puzzle = {
+  type: 'puzzle', 
   id: string,
   requires: string[],
   resultText: string
+}
+
+// State
+
+export type ChapterView = {
+  id: string,
+  title: string,
+  requires: string[],
+  revealedAt: number | undefined,
+  parts: ChapterPartView[]
+}
+
+export type ChapterPartView = {
+  id: string,
+  title: string,
+  requires: string[],
+  content: ContentBlockView[]
+  revealedAt: number | undefined
+}
+
+export type ContentBlockView = TextView | ActionView | PuzzleView
+
+export type TextView = { 
+  type: 'text',
+  text: string,
+  requires: string[],
+  revealedAt: number | undefined
+}
+
+export type ActionView = { 
+  type: 'action',
+  id: string,
+  label: string,
+  requires: string[],
+  dont?: string[],
+  changeChapter?: string
+  revealedAt: number | undefined
+  isExecuted: boolean
+}
+
+export type PuzzleView = {
+  type: 'puzzle',
+  id: string,
+  requires: string[],
+  revealedAt: number | undefined
+  isSolved: boolean,
 }
