@@ -19,11 +19,10 @@ const Data: Chapter[] = [{
       type: 'text', 
       text: `It's been a very nice hike so far. Following an almost faded trail. Around me are mountains covered in trees as far as I can see.`,   
     }, {
-      type: 'action', 
-      id: 'enter_structure_succes', 
-      label: 'Enter structure', 
-      changeChapter: 'chapter_ii',
-      requires: []
+      type: 'puzzle', 
+      id: 'fill_the_three_bars', 
+      requires: ['start'],
+      resultText: `The structure starts producing a humming sound. It feels low and soft, but somehow also very bright.`
     }, {
       type: 'action', 
       id: 'follow_trail', 
@@ -67,7 +66,7 @@ const Data: Chapter[] = [{
       id: 'examine_surroundings', 
       label: 'Examine surroundings', 
       requires: ['wake_up'],
-      resultText: `I take my small flashlight out of my backpack and shine it around. I can see a passage leading further inside.`
+      resultText: `I take my small flashlight out of my backpack and shine it around. Where is the openining I got through? I can see a passage leading further inside.`
     }, {
       type: 'action', 
       id: 'find_opening', 
