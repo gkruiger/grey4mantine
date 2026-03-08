@@ -3,6 +3,7 @@ import { MdInfo as InfoIcon } from "react-icons/md"
 import { MdRefresh as RefreshIcon } from "react-icons/md"
 import { MdMusicNote as MusicNoteIcon } from "react-icons/md"
 import { MdMusicOff as MusicOffIcon } from "react-icons/md"
+import { MdOutlineUndo as UndoIcon } from "react-icons/md";
 import { PiDotsThreeOutlineLight, PiDotsThreeOutlineFill } from "react-icons/pi";
 import { Text, ActionIcon, Group, Transition, Stack, Box, Tooltip } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
@@ -13,10 +14,12 @@ interface props {
   setIsSoundOn: (value: boolean) => void
   openHints: () => void,
   openRestart: () => void,
-  openAbout: () => void
+  openAbout: () => void,
+  undo: () => void,
+  debug: boolean
 }
 
-export default function Header({chapterName, isSoundOn, setIsSoundOn, openHints, openRestart, openAbout} : props) {
+export default function Header({chapterName, isSoundOn, setIsSoundOn, openHints, openRestart, openAbout, undo, debug} : props) {
 
   const [openedMenu, { toggle: toggleMenu }] = useDisclosure();
 
@@ -47,6 +50,13 @@ export default function Header({chapterName, isSoundOn, setIsSoundOn, openHints,
               >
                 {(styles) => 
                   <Group gap={0} style={styles}>
+                    {debug && 
+                      <Tooltip label="Undo" offset={0}>
+                        <ActionIcon onClick={() => undo()} variant="subtle" size="xl" radius="xl" style={{ color: 'inherit' }}>
+                          <UndoIcon size={26}/> 
+                        </ActionIcon>
+                      </Tooltip>
+                    }
                     <Tooltip label="Hints" offset={0}>
                       <ActionIcon onClick={() => {toggleMenu(); openHints()}} variant="subtle" size="xl" radius="xl" style={{ color: 'inherit' }}>
                         <HelpIcon size={26}/>

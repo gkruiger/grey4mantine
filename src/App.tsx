@@ -30,13 +30,20 @@ export default function App() {
 
   const handleAction = (id: string) => {
     gameEngine.performAction(id)    
-    setTick(prevTick => prevTick +1)
+    setTick(prevTick => prevTick +1 )
   }
 
   const restart = () => {
     gameEngine.restart()
     setTick(0)
   }
+
+  const undo = () => {
+    gameEngine.undo()
+    setTick(prevTick => prevTick + 1)
+  }
+
+  const DEBUG = true
 
   return (
     <>
@@ -54,6 +61,8 @@ export default function App() {
               openHints={hintsHandlers.open}
               openRestart={restartHandlers.open}
               openAbout={aboutsHandlers.open}
+              undo={undo}
+              debug={DEBUG}
             />
           </div>
         </div>

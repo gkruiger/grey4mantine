@@ -93,6 +93,14 @@ export default class GameEngine {
     this.initialize()
   }
 
+  undo(): void {
+    if(this.log.length > 1) {
+      this.log.pop()
+      this.save()
+      this.initialize()
+    }
+  }
+
   initialize(): void {
     this.log = []
     this.view = Data
