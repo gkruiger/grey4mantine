@@ -1,7 +1,7 @@
 import { ReactNode, useRef, useEffect } from "react"
 import { Text, Box, Button } from "@mantine/core"
 import { ChapterPartView } from "../Types/types"
-import PortalActivator from "../Puzzles/PortalActivator"
+import ThreeBars from "../Puzzles/ThreeBars"
 
 interface props {
   visibleContent: ChapterPartView[],
@@ -15,7 +15,7 @@ function GameView({visibleContent, currentChapterPartId, handleAction}: props) {
   
   const puzzle = (id: string, isSolved: boolean): ReactNode => {
     switch(id) {
-      case 'fill_the_three_bars': return <PortalActivator isSolved={isSolved} executeWhenSolved={() => handleAction('fill_the_three_bars')}/>
+      case 'fill_the_three_bars': return <ThreeBars isSolved={isSolved} executeWhenSolved={() => handleAction('fill_the_three_bars')}/>
       default: throw Error(`Can't find puzzle based on id ${id}`)
     }
   }
