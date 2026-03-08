@@ -2,14 +2,99 @@ import { ChapterView, ChapterPartView, ContentBlockView } from "../Types/types"
 import Data from "./GameData"
 
 export default class GameEngine {
-  private log: string[]
-  private view: ChapterView[]
+  private log: string[] = []
+  private view: ChapterView[] = []
   private currentChapterId: string = ''
   private currentChapterPartId: string = ''
 
-  constructor() {
-    this.log = []
+  private LocalStorageName = 'save'
 
+  constructor() {
+    this.initialize()
+  }
+
+  private getMaxOrderNumber(): number {
+    let maxOrderNumber = 0
+    
+    for(let chapter of this.view) {
+      if(chapter.revealedAt != undefined && chapter.revealedAt > maxOrderNumber) maxOrderNumber = chapter.revealedAt
+      for(let chapterPart of chapter.parts) {
+        if(chapterPart.revealedAt != undefined && chapterPart.revealedAt > maxOrderNumber) maxOrderNumber = chapterPart.revealedAt
+        for(let content of chapterPart.content) {
+          if(content.revealedAt != undefined && content.revealedAt > maxOrderNumber) maxOrderNumber = content.revealedAt
+        }
+      }
+    }
+    
+    return maxOrderNumber
+  }
+
+  performAction(actionId: string): void {
+    this.log.push(actionId)
+
+    for(let chapter of this.view) { 
+  
+      if(chapter.id == actionId) {
+        this.currentChapterId = actionId 
+      }
+  
+      for(let chapterPart of chapter.parts) {
+        if(this.meetsRequirements(chapterPart.requires) && chapterPart.revealedAt === undefined) {
+          chapterPart.revealedAt = this.getMaxOrderNumber() + 1
+          this.currentChapterPartId = chapterPart.id
+        }
+        
+        for(let content of chapterPart.content) {
+          switch(content.type) {
+            case 'action':
+              if(this.meetsRequirements(content.requires) && content.revealedAt === undefined) content.revealedAt = this.getMaxOrderNumber() + 1
+              if(this.actionIsTaken(content.id)) content.isExecuted = true
+              if(content.dont !== undefined && this.actionsAreTaken(content.dont)) content.isExecuted = true
+              if(content.id == actionId && content.changeChapter) this.currentChapterId = content.changeChapter
+              break   
+            case 'puzzle':
+              if(this.meetsRequirements(content.requires) && content.revealedAt === undefined) content.revealedAt = this.getMaxOrderNumber() + 1
+              if(this.puzzleIsSolved(content.id)) content.isSolved = true
+              break
+            case 'text':
+              if(this.meetsRequirements(content.requires) && content.revealedAt === undefined) content.revealedAt = this.getMaxOrderNumber() + 1
+              break
+          }
+        }    
+      }  
+    }
+
+    this.save()
+  }
+
+  private load(): boolean {
+    if(localStorage.hasOwnProperty(this.LocalStorageName)) {
+      let save: string[] = JSON.parse(localStorage.getItem(this.LocalStorageName) || '{}')
+      for(let action of save) {
+        this.performAction(action)
+      }
+      console.log('Yep, loading something.')
+      return true
+    }
+
+    console.log('Nope, no save.')
+    return false
+  }
+
+  private save(): void {
+    localStorage.setItem(
+      this.LocalStorageName, 
+      JSON.stringify(this.log)
+    )
+  }
+
+  restart(): void {
+    localStorage.removeItem(this.LocalStorageName)
+    this.initialize()
+  }
+
+  initialize(): void {
+    this.log = []
     this.view = Data
       .map(chapter=> ({ 
         id: chapter.id,
@@ -76,61 +161,7 @@ export default class GameEngine {
       }))
 
     // Execute fake first action
-    this.performAction('start')
-  }
-
-  private getMaxOrderNumber(): number {
-    let maxOrderNumber = 0
-    
-    for(let chapter of this.view) {
-      if(chapter.revealedAt != undefined && chapter.revealedAt > maxOrderNumber) maxOrderNumber = chapter.revealedAt
-      for(let chapterPart of chapter.parts) {
-        if(chapterPart.revealedAt != undefined && chapterPart.revealedAt > maxOrderNumber) maxOrderNumber = chapterPart.revealedAt
-        for(let content of chapterPart.content) {
-          if(content.revealedAt != undefined && content.revealedAt > maxOrderNumber) maxOrderNumber = content.revealedAt
-        }
-      }
-    }
-    
-    return maxOrderNumber
-  }
-
-  performAction(actionId: string): void {
-    this.log.push(actionId)
-
-    for(let chapter of this.view) { 
-  
-      if(chapter.id == actionId) {
-        this.currentChapterId = actionId 
-      }
-  
-      for(let chapterPart of chapter.parts) {
-        if(this.meetsRequirements(chapterPart.requires) && chapterPart.revealedAt === undefined) {
-          chapterPart.revealedAt = this.getMaxOrderNumber() + 1
-          this.currentChapterPartId = chapterPart.id
-        }
-        
-        for(let content of chapterPart.content) {
-          switch(content.type) {
-            case 'action':
-              if(this.meetsRequirements(content.requires) && content.revealedAt === undefined) content.revealedAt = this.getMaxOrderNumber() + 1
-              if(this.actionIsTaken(content.id)) content.isExecuted = true
-              if(content.dont !== undefined && this.actionsAreTaken(content.dont)) content.isExecuted = true
-              if(content.id == actionId && content.changeChapter) this.currentChapterId = content.changeChapter
-              break   
-            case 'puzzle':
-              if(this.meetsRequirements(content.requires) && content.revealedAt === undefined) content.revealedAt = this.getMaxOrderNumber() + 1
-              if(this.puzzleIsSolved(content.id)) content.isSolved = true
-              break
-            case 'text':
-              if(this.meetsRequirements(content.requires) && content.revealedAt === undefined) content.revealedAt = this.getMaxOrderNumber() + 1
-              break
-          }
-        }    
-      }  
-    }
-
-    // Scroll to? Waarnaar? Welke situaties? 
+    if(!this.load()) this.performAction('start')
   }
 
   private meetsRequirements(requirements: string[]): boolean {

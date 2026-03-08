@@ -21,11 +21,6 @@ export default function App() {
     }
   })
 
-  function restart() {
-    localStorage.removeItem('state')
-    window.location.reload()
-  }
-
   const [openedAbout, aboutsHandlers] = useDisclosure(false)
   const [openedRestart, restartHandlers] = useDisclosure(false)
   const [openedHints, hintsHandlers] = useDisclosure(false)
@@ -36,6 +31,11 @@ export default function App() {
   const handleAction = (id: string) => {
     gameEngine.performAction(id)    
     setTick(prevTick => prevTick +1)
+  }
+
+  const restart = () => {
+    gameEngine.restart()
+    setTick(0)
   }
 
   return (
