@@ -1,5 +1,3 @@
-# Mantine Vite template
+# Grey4Mantine (working title)
 
-Get started with the template by clicking `Use this template` button on the top of the page.
-
-[Documentation](https://mantine.dev/guides/vite/)
+A spiritual follow-up to the [Blue5](https://github.com/gkruiger/blue5) adventure.
