@@ -45,6 +45,8 @@ export default function App() {
 
   const DEBUG = true
 
+  const [showPuzzles, setShowPuzzles] = useState(true)
+
   return (
     <>
       <HintsModal opened={openedHints} onClose={hintsHandlers.close}/>             
@@ -61,14 +63,16 @@ export default function App() {
               openHints={hintsHandlers.open}
               openRestart={restartHandlers.open}
               openAbout={aboutsHandlers.open}
-              undo={undo}
               debug={DEBUG}
+              undo={undo}
+              showPuzzles={showPuzzles}
+              setShowPuzzles={setShowPuzzles}
             />
           </div>
         </div>
         <div className="content">
           <GameView
-            visibleContent={gameEngine.getVisibleContent()}
+            visibleContent={showPuzzles ? gameEngine.getAllPuzzles() : gameEngine.getVisibleContent()}
             currentChapterPartId={gameEngine.getCurrentChapterPartId()}
             handleAction={handleAction}
           />

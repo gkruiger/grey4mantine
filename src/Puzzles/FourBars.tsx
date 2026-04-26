@@ -11,12 +11,15 @@
     speed: number
     direction: -1 | 0 | 1
     value: number
+    pause: boolean
     success: boolean
   }
 
-  function ThreeBars({ executeWhenSolved, isSolved }: Props) {
+  function FourBars({ executeWhenSolved, isSolved }: Props) {
 
-    const barSpeeds = [27, 9, 3, 1]
+    const barSpeeds = [1, 2, 1, 4]
+    const successValue = 50
+    const successMargin = 5
     const delay = 50
     const width = '200px'
 
@@ -24,8 +27,9 @@
       barSpeeds.map((speed, i) => ({
         id: i,
         speed,
-        direction: 0,
+        direction: 1,
         value: 0,
+        pause: false,
         success: false
       }))
     )
@@ -41,25 +45,19 @@
         setBars(prevBars =>
           prevBars.map(bar => {
 
-            if (bar.direction === 0) return bar
+            if (bar.pause) return bar
+            if (bar.direction == 0) return bar
 
-            const delta = bar.direction === 1 ? bar.speed : -1
+            const delta = bar.direction === 1 ? bar.speed : -bar.speed
             let value = bar.value + delta
 
             value = Math.max(0, Math.min(100, value))
 
             let direction: -1 | 0 | 1 = bar.direction
-            let success = bar.success
+            let success = bar.value >= successValue - successMargin && bar.value <= successValue + successMargin
 
-            if (value === 100) {
-              success = true
-              direction = 0
-            }
-
-            if (value === 0) {
-              success = false
-              direction = 0
-            }
+            if (value === 100) direction = -1
+            if (value === 0) direction = 1
 
             return {
               ...bar,
@@ -67,7 +65,6 @@
               direction,
               success
             }
-
           })
         )
 
@@ -78,44 +75,35 @@
     }, [])
 
     useEffect(() => {
-
       if (!puzzleSolved && bars.every(b => b.success)) {
-
         setPuzzleSolved(true)
 
         setBars(prev =>
           prev.map(bar => ({
             ...bar,
-            direction: 0
+            direction: 0,
+            succes: true
           }))
         )
 
         executeWhenSolved()
       }
+    }, [bars])
 
-    }, [bars, puzzleSolved, executeWhenSolved])
-
-    const setDirection = (id: number, dir: -1 | 1) => {
+    const setPause = (id: number, pause: boolean) => {
 
       if(puzzleSolved) return
 
       setBars(prev =>
         prev.map(bar => {
-
           if (bar.id !== id) return bar
-
-          if (bar.direction === -1) return bar
-
-          if (bar.value == 0 && dir == -1) return bar
 
           return {
             ...bar,
-            direction: dir
+            pause: pause
           }
-
         })
       )
-
     }
 
     return (
@@ -131,18 +119,19 @@
         <Stack>
           {bars.map(bar => (
             <Group key={bar.id}>
-
               <ActionIcon
-                disabled={bar.direction === -1 || puzzleSolved}
-                onMouseDown={() => setDirection(bar.id, 1)}
-                onMouseUp={() => setDirection(bar.id, -1)}
-                onMouseLeave={() => setDirection(bar.id, -1)}
+                onMouseDown={() => setPause(bar.id, true)}
+                onMouseUp={() => setPause(bar.id, false)}
+                onMouseLeave={() => setPause(bar.id, false)}
               />
 
-              <Progress
+              <Progress.Root
                 style={{ width }}
-                value={bar.value}
-              />
+              >
+                <Progress.Section value={Math.min(bar.value, successValue - successMargin)} color="blue.3"/>
+                <Progress.Section value={Math.min(bar.value - (successValue - successMargin), successMargin * 2)} color="blue.5"/>
+                <Progress.Section value={Math.min(bar.value - (successValue + successMargin))} color='blue.3'/>
+              </Progress.Root>
 
               <ColorSwatch
                 color={bar.success ? '#228be6' : 'white'}
@@ -154,4 +143,4 @@
     )
   }
 
-  export default ThreeBars
+  export default FourBars

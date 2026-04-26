@@ -19,11 +19,6 @@ const Data: Chapter[] = [{
       type: 'text', 
       text: `It's been a very nice hike so far. Following an almost faded trail. Around me are mountains covered in trees as far as I can see.`,   
     }, {
-      type: 'puzzle', 
-      id: 'fill_the_three_bars', 
-      requires: ['start'],
-      resultText: `The structure starts producing a humming sound. It feels low and soft, but somehow also very bright.`
-    }, {
       type: 'action', 
       id: 'follow_trail', 
       label: 'Follow trail', 
@@ -60,7 +55,7 @@ const Data: Chapter[] = [{
       id: 'wake_up', 
       label: 'Wake up', 
       requires: ['lay_down'],
-      resultText: `When I wake up, I realize I don't see anyting. Don't hear anything either. Have I slept for too long?`
+      resultText: `When I wake up, I realize I don't see anyting. Don't hear anything either. Did I sleep so long that it's already night?`
     }, {
       type: 'action', 
       id: 'examine_surroundings', 
@@ -122,13 +117,59 @@ const Data: Chapter[] = [{
       id: 'enter_structure_succes', 
       label: 'Enter structure', 
       requires: ['fill_the_three_bars'],
+      changeChapter: 'chapter_ii'
     }]
   }]
 }, {
   id: 'chapter_ii',
-  title: 'Chapter II: First Arrival',
+  title: 'Chapter II: Going Places',
   requires: ['fill_the_three_bars'],
-  parts: []
+  parts: [{
+    id: 'the_mountain',
+    title: 'The Mountain',
+    requires: ['start'],
+    content: [{
+      requires: [],
+      type: 'text', 
+      text: `For a moment everything is dark. Then, in a couple of seconds, there is light again. Much more than from my flashlight alone. It normal daylight.`,   
+    }, {
+      type: 'action', 
+      id: 'follow_trail', 
+      label: 'Follow trail', 
+      requires: [],
+      resultText: 'With every step I take, the sky is getting darker. And fast too. A nasty storm is on its way. I should find some cover.'
+    }]
+  }]
+}, {
+  id: 'all_puzzles',
+  title: 'All Puzzles',
+  requires: [],
+  parts: [{
+    id: 'all_the_puzzles',
+    title: 'All the Puzzles',
+    requires: [],
+    content: [{
+      type: 'puzzle', 
+      id: 'fill_the_three_bars', 
+      requires: [],
+    }, {
+      type: 'puzzle', 
+      id: 'four_switches', 
+      requires: [],
+    }, {
+      type: 'puzzle', 
+      id: 'quadrant',
+      requires: [],
+    }, {
+      type: 'puzzle', 
+      id: 'four_bars', 
+      requires: [],
+    }, {
+      type: 'puzzle', 
+      id: 'FourMore', 
+      requires: [],
+    }]
+  }]
 }]
 
 

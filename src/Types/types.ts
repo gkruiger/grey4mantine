@@ -37,7 +37,7 @@ export type Puzzle = {
   type: 'puzzle', 
   id: string,
   requires: string[],
-  resultText: string
+  resultText?: string
 }
 
 // State

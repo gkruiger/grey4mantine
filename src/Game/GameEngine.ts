@@ -8,6 +8,7 @@ export default class GameEngine {
   private currentChapterPartId: string = ''
 
   private LocalStorageName = 'save'
+  private ChapterIdForAllChapter = 'all_puzzles'
 
   constructor() {
     this.initialize()
@@ -73,11 +74,9 @@ export default class GameEngine {
       for(let action of save) {
         this.performAction(action)
       }
-      console.log('Yep, loading something.')
       return true
     }
 
-    console.log('Nope, no save.')
     return false
   }
 
@@ -117,7 +116,7 @@ export default class GameEngine {
           content: part.content.flatMap((content): ContentBlockView[] => {
             let returnValue: ContentBlockView[] = []
             switch (content.type) {
-              case 'text': 
+              case 'text':
                 returnValue.push({
                   type: content.type,
                   requires: content.requires,
@@ -125,7 +124,7 @@ export default class GameEngine {
                   revealedAt: undefined,
                 })
                 break
-              case 'action': 
+              case 'action':
                 returnValue.push({
                   id: content.id,
                   type: content.type,
@@ -210,6 +209,23 @@ export default class GameEngine {
           .filter(content => content.revealedAt !== undefined)
           .sort((a, b) => (a.revealedAt ?? 0) - (b.revealedAt ?? 0))
       }))
+    
+    return visibleContent
+  }
+
+  getAllPuzzles(): ChapterPartView[] {
+    const relevantChapterParts = this.view.find(chapter => chapter.id == this.ChapterIdForAllChapter)?.parts
+    if(relevantChapterParts === undefined) throw Error(`Can't find chapter name based on id ${this.ChapterIdForAllChapter}.`)   
+    
+    const visibleContent = relevantChapterParts
+    .map(chapterPart => ({
+      ...chapterPart,
+      revealedAt: 1,
+      content: chapterPart.content.map(content => ({
+        ...content,
+        revealedAt: 1
+      }))
+    }))
     
     return visibleContent
   }

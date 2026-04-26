@@ -2,6 +2,10 @@ import { ReactNode, useRef, useEffect } from "react"
 import { Text, Box, Button } from "@mantine/core"
 import { ChapterPartView } from "../Types/types"
 import ThreeBars from "../Puzzles/ThreeBars"
+import FourSwitches from "../Puzzles/FourSwitches"
+import Quadrant from "../Puzzles/Quadrant"
+import FourBars from "../Puzzles/FourBars"
+import FourMore from "../Puzzles/FourMore"
 
 interface props {
   visibleContent: ChapterPartView[],
@@ -16,6 +20,10 @@ function GameView({visibleContent, currentChapterPartId, handleAction}: props) {
   const puzzle = (id: string, isSolved: boolean): ReactNode => {
     switch(id) {
       case 'fill_the_three_bars': return <ThreeBars isSolved={isSolved} executeWhenSolved={() => handleAction('fill_the_three_bars')}/>
+      case 'four_switches': return <FourSwitches isSolved={isSolved} executeWhenSolved={() => handleAction('four_switches')}/>
+      case 'quadrant': return <Quadrant isSolved={isSolved} executeWhenSolved={() => handleAction('quadrant')}/>
+      case 'four_bars': return <FourBars isSolved={isSolved} executeWhenSolved={() => handleAction('four_bars')}/>
+      case 'FourMore': return <FourMore isSolved={isSolved} executeWhenSolved={() => handleAction('FourMore')}/>
       default: throw Error(`Can't find puzzle based on id ${id}`)
     }
   }
@@ -64,7 +72,7 @@ function GameView({visibleContent, currentChapterPartId, handleAction}: props) {
               if(content.type === 'puzzle' && content.revealedAt !== undefined) {
                 return ( 
                   <Box
-                    key={index}
+                    key={content.id}
                     className='fadeIn'
                     style={{
                       paddingBottom: 16, 
@@ -103,8 +111,6 @@ function GameView({visibleContent, currentChapterPartId, handleAction}: props) {
                 })}
               </Box>
             }
-
-
           </div>
         </div>
       )}
